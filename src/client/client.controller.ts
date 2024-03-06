@@ -1,19 +1,13 @@
-import { HttpService } from '@nestjs/axios';
 import { Controller, Get, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { firstValueFrom } from 'rxjs';
+import { ClientService } from './client.service';
 
 @Controller('client')
 export class ClientController {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly clientService: ClientService) {}
 
   @Get('info')
   async getClientInfo(@Req() request: Request) {
-    const ip = request.ip === '::1' ? '185.130.54.124' : request.ip;
-    
-    const { data } = await firstValueFrom(
-      this.httpService.get(`https://ipapi.co/${ip}/json/`).pipe()
-    );
-    return data;
+    return this.clientService.getInfo(request);
   }
 }
