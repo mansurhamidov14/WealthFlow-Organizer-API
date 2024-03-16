@@ -19,7 +19,7 @@ export class CurrencyService {
       this.httpClient.get(`https://www.valyuta.com/api/calculator/${base}/${convertedCurrencies}/${date}`)
     );
     const data = body.map(({ from, to, result }) => ({ from, to, result, date })) as CurrencyRate[];
-    const result = await this.prisma.currencyRate.createMany({ data });
+    await this.prisma.currencyRate.createMany({ data });
     return data.filter(rate => currencies.includes(rate.to));
   }
 
