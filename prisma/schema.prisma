@@ -7,16 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model CurrencyRate {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  from CurrencyCode
-  to CurrencyCode
-  result Float
-  date String
-
-  @@map("currencyRates")
-}
-
 enum CurrencyCode {
   AZN
   GBP
@@ -25,4 +15,32 @@ enum CurrencyCode {
   RUB
   TRY
   EUR
+}
+
+model CurrencyRate {
+  id     String       @id @default(auto()) @map("_id") @db.ObjectId
+  from   CurrencyCode
+  to     CurrencyCode
+  result Float
+  date   String
+
+  @@map("currencyRates")
+}
+
+model User {
+  id                          String       @id @default(auto()) @map("_id") @db.ObjectId
+  email                       String       @unique
+  hash                        String
+  firstName                   String
+  lastName                    String
+  avatar                      String
+  createdAt                   Int
+  updatedAt                   Int?
+  hasPinProtection            Boolean
+  pinHash                     String?
+  incorrectPinAttemptsCounter Int?
+  blockTime                   BigInt? // In case user entered invalid pinCode {n} times
+  primaryCurrency             CurrencyCode
+
+  @@map("users")
 }

@@ -7,6 +7,10 @@ const md5 = require('md5');
 export class AccessKeyGuard implements CanActivate {
   constructor(private config: ConfigService, private clientService: ClientService) {}
   canActivate(context: ExecutionContext): boolean {
+    if (this.config.get('DISABLE_ACCESS_KEY_GUARD') == '1') {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const ip = this.clientService.getIp(request);
     const validKey = md5(this.config.get('CURRENCY_RATES_ACCESS_SALT') + md5(ip));
