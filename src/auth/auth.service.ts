@@ -65,7 +65,8 @@ export class AuthService {
 
       // return the saved user
       delete user.hash
-      return user;
+      const access_token = await this.signToken(user.id, user.email);
+      return { user, access_token };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ForbiddenException('This email is already taken');
@@ -75,7 +76,7 @@ export class AuthService {
     }
   }
 
-  async signToken(userId: User['id'], email: string) {
+  signToken(userId: User['id'], email: string) {
     const payload = {
       sub: userId,
       email
