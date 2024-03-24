@@ -12,10 +12,10 @@ export class UserService {
   private static INCORRECT_PIN_BLOCK_ERROR = 'IncorrectPinBlock';
   private static INVALID_PASSWORD_ERROR = 'InvalidPassword';
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private db: PrismaService) {}
 
   async getById(id: User['id']) {
-    const user = await this.prisma.user.findUnique({ where: { id }});
+    const user = await this.db.user.findUnique({ where: { id }});
     if (user) {
       delete user.hash;
       delete user.pinHash;
@@ -25,7 +25,7 @@ export class UserService {
 
   async update(id: User['id'], data: Partial<User>) {
     data.updatedAt = new Date();
-    await this.prisma.user.update({ where: { id }, data });
+    await this.db.user.update({ where: { id }, data });
   }
 
   async setPin(userId: User['id'], dto: SetPinDto) {
@@ -33,7 +33,7 @@ export class UserService {
       await this.validatePin(userId, dto.pinCode, false);
       const hasPinProtection = Boolean(dto.newPinCode);
       const pinHash = hasPinProtection ? await createHash(dto.newPinCode) : null;
-      await this.prisma.user.update({
+      await this.db.user.update({
         where: { id: userId},
         data: { hasPinProtection, pinHash, updatedAt: new Date() }
       });
@@ -45,7 +45,7 @@ export class UserService {
 
   async validatePin(userId: User['id'], pinCode: string, applyLimits: boolean) {
     const where = { id: userId };
-    const user = await this.prisma.user.findUnique({ where });
+    const user = await this.db.user.findUnique({ where });
     if (!user.hasPinProtection) {
       return true;
     }
@@ -65,7 +65,7 @@ export class UserService {
         incorrectPinAttemptsCounter: pinMatches ? 0 : user.incorrectPinAttemptsCounter + 1
       }
   
-      await this.prisma.user.update({ where, data: updateData });
+      await this.db.user.update({ where, data: updateData });
     }
 
     if (reachedMaxInvalidPinAttempts) {
@@ -82,14 +82,14 @@ export class UserService {
   async removePinByPassword(userId: User['id'], password: string) {
     try {
       const where = { id: userId };
-      const user = await this.prisma.user.findUnique({ where });
+      const user = await this.db.user.findUnique({ where });
       const passwordMatches = await verifyPassword(user.hash, password);
 
       if (!passwordMatches) {
         throw new ForbiddenException(UserService.INVALID_PASSWORD_ERROR);
       }
 
-      await this.prisma.user.update({
+      await this.db.user.update({
         where,
         data: {
           pinHash: null,
@@ -106,11 +106,11 @@ export class UserService {
   async updatePassword(userId: User['id'], dto: ResetPasswordDto) {
     const where = { id: userId };
     try {
-      const user = await this.prisma.user.findUnique({ where });
+      const user = await this.db.user.findUnique({ where });
       const isPasswordValid = await verifyPassword(user.hash, dto.password);
       if (isPasswordValid) {
         const hash = await createHash(dto.newPassword);
-        await this.prisma.user.update({ where, data: { hash, updatedAt: new Date() }});
+        await this.db.user.update({ where, data: { hash, updatedAt: new Date() }});
         return true;
       }
 

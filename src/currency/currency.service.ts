@@ -7,7 +7,7 @@ import { ALL_AVAILABLE_CURRENCIES } from './currency.constants';
 
 @Injectable()
 export class CurrencyService {
-  constructor(private prisma: PrismaService, private httpClient: HttpService) {}
+  constructor(private db: PrismaService, private httpClient: HttpService) {}
 
   async getCurrencyRates(base: CurrencyCode, currencies: CurrencyCode[], date: string) {
     const cached = await this.findCached(base, currencies, date);
@@ -19,12 +19,12 @@ export class CurrencyService {
       this.httpClient.get(`https://www.valyuta.com/api/calculator/${base}/${convertedCurrencies}/${date}`)
     );
     const data = body.map(({ from, to, result }) => ({ from, to, result, date })) as CurrencyRate[];
-    await this.prisma.currencyRate.createMany({ data });
+    await this.db.currencyRate.createMany({ data });
     return data.filter(rate => currencies.includes(rate.to));
   }
 
   private findCached(base: CurrencyCode, currencies: CurrencyCode[], date: string) {
-    return this.prisma.currencyRate.findMany({
+    return this.db.currencyRate.findMany({
       where: {
         date,
         from: base,
