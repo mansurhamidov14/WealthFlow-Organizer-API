@@ -28,9 +28,3 @@ export class SignUpDto extends AuthDto {
   @IsString()
   avatar: string;
 }
-
-export class PinDto {
-  @IsString()
-  @IsNotEmpty()
-  pinCode: string;
-}

@@ -34,12 +34,12 @@ model User {
   firstName                   String
   lastName                    String
   avatar                      String
-  createdAt                   Int
-  updatedAt                   Int?
+  createdAt                   DateTime
+  updatedAt                   DateTime?
   hasPinProtection            Boolean
   pinHash                     String?
   incorrectPinAttemptsCounter Int?
-  blockTime                   BigInt? // In case user entered invalid pinCode {n} times
+  blockTime                   DateTime? // In case user entered invalid pinCode {n} times
   primaryCurrency             CurrencyCode
 
   @@map("users")
