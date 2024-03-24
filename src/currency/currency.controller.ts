@@ -1,9 +1,9 @@
-import { AccessKeyGuard } from '@app/guards/access-key/access-key.guard';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { CurrencyCode } from '@prisma/client';
 import { CurrencyService } from './currency.service';
+import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
 
-@UseGuards(AccessKeyGuard)
+@UseGuards(JwtAccessGuard)
 @Controller('currency')
 export class CurrencyController {
   constructor(private currencyService: CurrencyService) {}

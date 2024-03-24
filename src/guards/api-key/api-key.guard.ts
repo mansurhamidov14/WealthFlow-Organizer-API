@@ -4,16 +4,16 @@ import { ConfigService } from '@nestjs/config';
 const md5 = require('md5');
 
 @Injectable()
-export class AccessKeyGuard implements CanActivate {
+export class ApiKeyGuard implements CanActivate {
   constructor(private config: ConfigService, private clientService: ClientService) {}
   canActivate(context: ExecutionContext): boolean {
-    if (this.config.get('DISABLE_ACCESS_KEY_GUARD') == '1') {
+    if (this.config.get('DISABLE_API_KEY_GUARD') == '1') {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const ip = this.clientService.getIp(request);
-    const validKey = md5(this.config.get('CURRENCY_RATES_ACCESS_SALT') + md5(ip));
-    return request.headers?.['access-key'] === validKey;
+    const validKey = md5(this.config.get('API_KEY_SALT') + md5(ip));
+    return request.headers?.['api-key'] === validKey;
   }
 }

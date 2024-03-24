@@ -1,11 +1,11 @@
 import { User } from '@app/decorators/user.decorator';
-import { JwtGuard } from '@app/guards/jwt/jwt.guard';
+import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
 import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { User as UserType } from '@prisma/client';
 import { RemovePinByPasswordDto, ResetPasswordDto, SetPinDto, ValidatePinDto } from './user.dto';
 import { UserService } from './user.service';
 
-@UseGuards(JwtGuard)
+@UseGuards(JwtAccessGuard)
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}

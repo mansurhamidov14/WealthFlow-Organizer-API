@@ -1,11 +1,12 @@
 import { PrismaService } from '@app/prisma/prisma.service';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { hash as createHash, verify as verifyPassword } from 'argon2';
 import { AuthDto, SignUpDto } from './auth.dto';
+const md5 = require('md5');
 
 @Injectable()
 export class AuthService {
@@ -33,12 +34,12 @@ export class AuthService {
       throw new ForbiddenException(AuthService.INVALID_CREDENTIALS_ERROR)
     }
 
-    const access_token = await this.signToken(user.id, user.email);
+    const tokens = await this.signTokens(user.id, user.email);
     delete user.hash;
 
     return {
       user,
-      access_token
+      ...tokens
     };
   }
 
@@ -64,8 +65,8 @@ export class AuthService {
       // return the saved user
       delete user.hash;
       delete user.pinHash;
-      const access_token = await this.signToken(user.id, user.email);
-      return { user, access_token };
+      const { access_token, refresh_token } = await this.signTokens(user.id, user.email);
+      return { user, access_token, refresh_token };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ForbiddenException(AuthService.EMAIL_ALREADY_TAKEN_ERROR);
@@ -75,16 +76,45 @@ export class AuthService {
     }
   }
 
-  signToken(userId: User['id'], email: string) {
+  async refreshToken(userId: string, email: string, token: string) {
+    const tokenHash = md5(token);
+    const where = { userId, tokenHash }
+    const activeToken = await this.prisma.usersRefreshTokens.findFirst({ where });
+
+    if (!activeToken) {
+      throw new UnauthorizedException();
+    }
+
+    await this.prisma.usersRefreshTokens.delete({ where: { id: activeToken.id }});
+    return await this.signTokens(userId, email);
+  }
+
+  async deleteRefreshToken(userId: User['id'], refreshToken: string) {
+    const tokenHash = md5(refreshToken);
+    await this.prisma.usersRefreshTokens.deleteMany({ where: { userId, tokenHash } });
+  }
+
+  async signTokens(userId: User['id'], email: string) {
     const payload = {
       sub: userId,
       email
     };
 
-    return this.jwt.signAsync(payload, {
-      expiresIn: '2h',
-      secret: this.config.get('JWT_SECRET')
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwt.signAsync(payload, {
+        expiresIn: '20m',
+        secret: this.config.get('JWT_ACCESS_SECRET'),
+      }),
+      this.jwt.signAsync(payload, {
+        expiresIn: '30d',
+        secret: this.config.get('JWT_REFRESH_SECRET')
+      })
+    ]);
+
+    await this.prisma.usersRefreshTokens.create({
+      data: { userId, tokenHash: md5(`Bearer ${refresh_token}`) }
     });
+    return { access_token, refresh_token };
   }
 
   async userExists(email: string) {

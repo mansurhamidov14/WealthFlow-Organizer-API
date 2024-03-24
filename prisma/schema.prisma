@@ -44,3 +44,11 @@ model User {
 
   @@map("users")
 }
+
+model UsersRefreshTokens {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  tokenHash String
+
+  @@map("usersRefreshTokens")
+}
