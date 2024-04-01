@@ -1,5 +1,5 @@
 import { PrismaService } from '@app/prisma/prisma.service';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AccountFormDto } from './account.dto';
 
 @Injectable()
@@ -37,14 +37,20 @@ export class AccountService {
     if (primary) {
       await this.removePrimaryFlagFromPrimaryAccount(userId);
     }
-    return this.db.account.update({
-      where: { id, userId },
-      data: {
-        ...dto,
-        primary, 
-        updatedAt: new Date()
-      }
-    });
+
+    try {
+      const updated = this.db.account.update({
+        where: { id, userId },
+        data: {
+          ...dto,
+          primary, 
+          updatedAt: new Date()
+        }
+      });
+      return updated;
+    } catch (e) {
+      throw new NotFoundException('Account not found');
+    }
   }
 
   private removePrimaryFlagFromPrimaryAccount(userId: string) {
@@ -59,16 +65,25 @@ export class AccountService {
     if (isPrimary) {
       throw new ForbiddenException(AccountService.PRIMARY_ACCOUNT_CAN_NOT_BE_DELETED_ERROR);
     }
-
-    return this.db.account.delete({ where: { userId, id }})
+    try {
+      const deleted = await this.db.account.delete({ where: { userId, id }});
+      return deleted;
+    } catch (e) {
+      throw new NotFoundException('Account not found');
+    }
   }
 
   async changeBalance(id: string, userId: string, difference: number) {
-    return this.db.account.update({
-      where: { id, userId },
-      data: {
-        balance: { increment: difference }
-      }
-    });
+    try {
+      const updated = this.db.account.update({
+        where: { id, userId },
+        data: {
+          balance: { increment: difference }
+        }
+      });
+      return updated;
+    } catch (e) {
+      throw new NotFoundException('Account not found');
+    }
   }
 }

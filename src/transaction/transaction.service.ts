@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TransactionFormDto } from './transaction.dto';
 import { PrismaService } from '@app/prisma/prisma.service';
 
@@ -29,15 +29,20 @@ export class TransactionService {
 
   async update(id: string, userId: string, dto: TransactionFormDto) {
     const { transactionDateTime, accountId, ...rest } = dto;
-    return this.db.transaction.update({
-      where: { id, userId },
-      data: {
-        ...rest,
-        account: { connect: { id: accountId } },
-        transactionDateTime: new Date(transactionDateTime),
-        updatedAt: new Date()
-      }
-    });
+    try {
+      const updated = await this.db.transaction.update({
+        where: { id, userId },
+        data: {
+          ...rest,
+          account: { connect: { id: accountId } },
+          transactionDateTime: new Date(transactionDateTime),
+          updatedAt: new Date()
+        }
+      });
+      return updated;
+    } catch (e) {
+      throw new NotFoundException('Transaction not found');
+    } 
   }
 
   async delete(id: string, userId: string) {
