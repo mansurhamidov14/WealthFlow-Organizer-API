@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { AccountController } from './account/account.controller';
 import { AccountService } from './account/account.service';
 import { AccountModule } from './account/account.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -21,9 +22,8 @@ import { AccountModule } from './account/account.module';
     CurrencyModule,
     PrismaModule,
     UserModule,
-    AccountModule
-  ],
-  controllers: [AccountController],
-  providers: [AccountService],
+    AccountModule,
+    TransactionModule
+  ]
 })
 export class AppModule {}

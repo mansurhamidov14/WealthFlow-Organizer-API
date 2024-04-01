@@ -25,7 +25,7 @@ export class AccountService {
     return this.db.account.create({
       data: {
         ...dto,
-        userId,
+        user: { connect: { id: userId }},
         primary,
         createdAt: new Date()
       }

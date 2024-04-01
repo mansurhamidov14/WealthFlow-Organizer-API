@@ -28,8 +28,8 @@ model CurrencyRate {
 }
 
 model User {
-  id                          String       @id @default(auto()) @map("_id") @db.ObjectId
-  email                       String       @unique
+  id                          String        @id @default(auto()) @map("_id") @db.ObjectId
+  email                       String        @unique
   hash                        String
   firstName                   String
   lastName                    String
@@ -42,6 +42,7 @@ model User {
   blockTime                   DateTime? // In case user entered invalid pinCode {n} times
   primaryCurrency             CurrencyCode
   accounts                    Account[]
+  transactions                Transaction[]
 
   @@map("users")
 }
@@ -55,16 +56,39 @@ model UsersRefreshTokens {
 }
 
 model Account {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  currency  CurrencyCode
-  primary   Boolean
-  balance   Float
-  skin      String
-  createdAt DateTime
-  updatedAt DateTime?
-  userId    String       @db.ObjectId
-  user      User         @relation(fields: [userId], references: [id])
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  currency     CurrencyCode
+  primary      Boolean
+  balance      Float
+  skin         String
+  createdAt    DateTime
+  updatedAt    DateTime?
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
 
   @@map("accounts")
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+model Transaction {
+  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
+  title               String
+  type                TransactionType
+  amount              Float
+  category            String
+  transactionDateTime DateTime
+  createdAt           DateTime
+  updatedAt           DateTime?
+  userId              String          @db.ObjectId
+  user                User            @relation(fields: [userId], references: [id])
+  accountId           String          @db.ObjectId
+  account             Account         @relation(fields: [accountId], references: [id])
+
+  @@map("transactions")
 }
