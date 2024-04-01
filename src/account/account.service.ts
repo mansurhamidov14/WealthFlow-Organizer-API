@@ -9,7 +9,7 @@ export class AccountService {
   constructor(private db: PrismaService) {}
 
   getList(userId: string) {
-    return this.db.account.findMany({ where: { userId }});
+    return this.db.account.findMany({ where: { userId }, orderBy: { primary: 'desc' } });
   }
 
   findById(id: string, userId: string) {

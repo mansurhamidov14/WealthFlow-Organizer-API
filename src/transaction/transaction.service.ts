@@ -6,8 +6,18 @@ import { PrismaService } from '@app/prisma/prisma.service';
 export class TransactionService {
   constructor(private db: PrismaService) {}
 
-  getList(userId: string) {
-    return this.db.transaction.findMany({ where: { userId }});
+  getList(userId: string, fromDate?: string, toDate?: string, category?: string) {
+    return this.db.transaction.findMany({
+      where: {
+        userId,
+        transactionDateTime: {
+          gte: fromDate &&  new Date(fromDate),
+          lte: toDate && new Date(toDate)
+        },
+        category: category || undefined
+      },
+      orderBy: { transactionDateTime: 'desc' }
+    });
   }
 
   findById(id: string, userId: string) {

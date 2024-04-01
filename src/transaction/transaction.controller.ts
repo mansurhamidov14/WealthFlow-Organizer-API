@@ -1,5 +1,5 @@
 import { User } from '@app/decorators/user.decorator';
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { TransactionFormDto } from './transaction.dto';
 import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
@@ -10,8 +10,13 @@ export class TransactionController {
   constructor(private transactionService: TransactionService) {}
 
   @Get('list')
-  getList(@User('sub') userId: string) {
-    return this.transactionService.getList(userId);
+  getList(
+    @User('sub') userId: string,
+    @Query('from') fromDate?: string,
+    @Query('to') toDate?: string,
+    @Query('category') category?: string
+  ) {
+    return this.transactionService.getList(userId, fromDate, toDate, category);
   }
 
   @Post('new')
