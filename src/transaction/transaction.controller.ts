@@ -38,4 +38,9 @@ export class TransactionController {
   delete(@User('sub') userId: string, @Param('id') id: string) {
     return this.transactionService.delete(id, userId);
   }
+
+  @Delete('by-account/:accountId')
+  deleteByAccount(@User('sub') userId: string, @Param('accountId') accountId: string) {
+    return  this.transactionService.deleteByAccountId(userId, accountId);
+  }
 }

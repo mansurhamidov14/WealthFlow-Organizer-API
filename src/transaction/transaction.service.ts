@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { TransactionFormDto } from './transaction.dto';
 import { PrismaService } from '@app/prisma/prisma.service';
 
@@ -60,7 +60,16 @@ export class TransactionService {
       await this.db.transaction.delete({ where: { userId, id }});
       return true;
     } catch (e) {
-      return false;
+      throw new NotFoundException('Transaction not found')
+    }
+  }
+
+  async deleteByAccountId(userId: string, accountId: string) {
+    try {
+      const deleted = await this.db.transaction.deleteMany({ where: { accountId, userId } });
+      return deleted;
+    } catch (e) {
+      throw new BadRequestException('Bad request')
     }
   }
 }
