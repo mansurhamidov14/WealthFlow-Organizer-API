@@ -20,9 +20,17 @@ export class TransactionFormDto {
 
   @IsString()
   @IsNotEmpty()
-  accountId: string;
+  account: string;
 
   @IsString()
   @IsNotEmpty()
-  transactionDateTime: string;
+  date: string;
+}
+
+export type QueryFilter = {
+  fromDate?: string;
+  toDate?: string;
+  category?: string;
+  take?: number;
+  skip?: number;
 }

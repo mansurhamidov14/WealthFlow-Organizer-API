@@ -1,13 +1,22 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { TransactionFormDto } from './transaction.dto';
+import { QueryFilter, TransactionFormDto } from './transaction.dto';
 import { PrismaService } from '@app/prisma/prisma.service';
 
 @Injectable()
 export class TransactionService {
   constructor(private db: PrismaService) {}
 
-  getList(userId: string, fromDate?: string, toDate?: string, category?: string) {
+  getList(userId: string, filter: QueryFilter) {
+    const { fromDate, toDate, category, take, skip } = filter ?? {};
     return this.db.transaction.findMany({
+      include: {
+        account: {
+          select: {
+            id: true,
+            currency: true
+          }
+        }
+      },
       where: {
         userId,
         transactionDateTime: {
@@ -16,36 +25,47 @@ export class TransactionService {
         },
         category: category || undefined
       },
-      orderBy: { transactionDateTime: 'desc' }
+      orderBy: { transactionDateTime: 'desc' },
+      skip,
+      take
     });
   }
 
   findById(id: string, userId: string) {
-    return this.db.transaction.findUnique({ where: { id, userId }});
+    return this.db.transaction.findUnique({
+      include: {
+        account: {
+          select: {
+            id: true,
+            currency: true
+          }
+        }
+      },
+      where: { id, userId }});
   }
 
   async create(userId: string, dto: TransactionFormDto) {
-    const { transactionDateTime, accountId, ...rest } = dto;
+    const { date, account, ...rest } = dto;
     return this.db.transaction.create({
       data: {
         ...rest,
         user: { connect: { id: userId } },
-        account: { connect: { id: accountId } },
-        transactionDateTime: new Date(transactionDateTime),
+        account: { connect: { id: account } },
+        transactionDateTime: new Date(date),
         createdAt: new Date()
       }
     });
   }
 
   async update(id: string, userId: string, dto: TransactionFormDto) {
-    const { transactionDateTime, accountId, ...rest } = dto;
+    const { date, account, ...rest } = dto;
     try {
       const updated = await this.db.transaction.update({
         where: { id, userId },
         data: {
           ...rest,
-          account: { connect: { id: accountId } },
-          transactionDateTime: new Date(transactionDateTime),
+          account: { connect: { id: account } },
+          transactionDateTime: new Date(date),
           updatedAt: new Date()
         }
       });
