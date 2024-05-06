@@ -1,10 +1,11 @@
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   ValidateIf,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator';
 
 class RecurringTaskDay {
@@ -43,8 +44,9 @@ export class TaskFormDto {
   @ValidateIf(dto => !dto.isRecurring || dto.isRecurring === '0')
   time: string;
 
-  @ValidateNested({ each: true })
   @ValidateIf(dto => dto.isRecurring && dto.isRecurring !== '0')
+  @ValidateNested({ each: true })
+  @Type(() => RecurringTaskDay)
   days: RecurringTaskDay[];
 }
 

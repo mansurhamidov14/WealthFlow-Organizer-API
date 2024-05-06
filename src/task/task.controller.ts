@@ -1,8 +1,10 @@
 import { User } from '@app/decorators/user.decorator';
-import { Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { TaskFormDto, ToggleDoneDto } from './task.dto';
 import { TaskService } from './task.service';
 
+@UseGuards(JwtAccessGuard)
 @Controller('task')
 export class TaskController {
   constructor(private taskService: TaskService) {}
@@ -13,7 +15,7 @@ export class TaskController {
   }
 
   @Post('new')
-  addTask(@User('sub') userId: string, dto: TaskFormDto) {
+  addTask(@User('sub') userId: string, @Body() dto: TaskFormDto) {
     return this.taskService.addTask(userId, dto);
   }
 
@@ -23,13 +25,13 @@ export class TaskController {
   }
 
   @Patch(':id')
-  async updateTask(@User('sub') userId: string, @Param('id') id: string, dto: TaskFormDto) {
+  async updateTask(@User('sub') userId: string, @Param('id') id: string, @Body() dto: TaskFormDto) {
     await this.taskService.delete(id, userId, true);
     return this.taskService.addTask(userId, dto);
   }
 
   @Patch(':id/done')
-  toggleDone(@User('sub') userId: string, @Param('id') id: string, dto: ToggleDoneDto) {
+  toggleDone(@User('sub') userId: string, @Param('id') id: string, @Body() dto: ToggleDoneDto) {
     return this.taskService.updateById(id, userId, {
       doneAt: dto.doneAt ? new Date(dto.doneAt) : null
     });

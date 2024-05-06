@@ -39,7 +39,7 @@ export class TaskService {
         endDate: dto.endDate,
         title: dto.title,
         time: originalTaskDay.time,
-        doneAt: originalTaskDay.doneAt && new Date(originalTaskDay.doneAt),
+        doneAt: new Date(originalTaskDay.doneAt ?? 0),
         isRecurring,
         createdAt: new Date()
       }
@@ -55,7 +55,7 @@ export class TaskService {
           endDate: dto.endDate,
           title: dto.title,
           time: taskDay.time,
-          doneAt: taskDay.doneAt && new Date(taskDay.doneAt),
+          doneAt: new Date(taskDay.doneAt ?? 0),
           isRecurring,
           createdAt: new Date()
         }))
@@ -141,16 +141,14 @@ export class TaskService {
       } as OneTimeTaskResponse;
     };
 
+    const searchId = task.originalId ?? task.id
     const linkedTasks = await this.db.task.findMany({
-      where: task.originalId
-        ? {
-          OR: [
-            { originalId: task.originalId },
-            { id: task.originalId }
-          ]
-        }
-        : { originalId: task.id },
-      orderBy: { weekday: 'asc' }
+      where: {
+        OR: [
+          { originalId: searchId },
+          { id: searchId }
+        ]
+      }
     });
 
     return {
