@@ -43,6 +43,7 @@ model User {
   primaryCurrency             CurrencyCode
   accounts                    Account[]
   transactions                Transaction[]
+  tasks                       Task[]
 
   @@map("users")
 }
@@ -91,4 +92,22 @@ model Transaction {
   account             Account         @relation(fields: [accountId], references: [id])
 
   @@map("transactions")
+}
+
+model Task {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  originalId  String?
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id])
+  title       String
+  isRecurring Boolean
+  startDate   String
+  endDate     String
+  weekday     Int
+  time        String
+  doneAt      DateTime?
+  createdAt   DateTime
+  updatedAt   DateTime?
+
+  @@map("tasks")
 }

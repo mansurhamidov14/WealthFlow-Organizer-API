@@ -1,7 +1,7 @@
+import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { CurrencyCode } from '@prisma/client';
 import { CurrencyService } from './currency.service';
-import { JwtAccessGuard } from '@app/guards/jwt-access/jwt-access.guard';
 
 @UseGuards(JwtAccessGuard)
 @Controller('currency')
