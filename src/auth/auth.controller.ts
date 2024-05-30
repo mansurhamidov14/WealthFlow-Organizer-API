@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, Post, Query, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthDto, SignUpDto } from './auth.dto';
+import { User } from '@app/decorators/user.decorator';
 import { ApiKeyGuard } from '@app/guards/api-key/api-key.guard';
 import { JwtRefreshGuard } from '@app/guards/refresh-token/jwt-refresh.guard';
-import { User } from '@app/decorators/user.decorator';
+import { UserId } from '@app/user/user.dto';
+import { Body, Controller, Get, Headers, Post, Query, UseGuards } from '@nestjs/common';
+import { AuthDto, SignUpDto } from './auth.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -31,14 +32,14 @@ export class AuthController {
   @Post('refresh-token')
   refreshToken(
     @Headers('Authorization') refreshToken: string,
-    @User() user: { sub: string, email: string }
+    @User() user: { sub: UserId, email: string }
   ) {
     return this.authService.refreshToken(user.sub, user.email, refreshToken);
   }
 
   @UseGuards(JwtRefreshGuard)
   @Post('logout')
-  logout(@Headers('Authorization') refreshToken: string, @User('sub') userId: string) {
+  logout(@Headers('Authorization') refreshToken: string, @User('sub') userId: UserId) {
     return this.authService.deleteRefreshToken(userId, refreshToken);
   }
 }

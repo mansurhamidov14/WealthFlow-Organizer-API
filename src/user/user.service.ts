@@ -2,7 +2,7 @@ import { PrismaService } from '@app/prisma/prisma.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { hash as createHash, verify as verifyPassword } from 'argon2';
-import { ResetPasswordDto, SetPinDto } from './user.dto';
+import { ResetPasswordDto, SetPinDto, UserId } from './user.dto';
 
 @Injectable()
 export class UserService {
@@ -14,7 +14,7 @@ export class UserService {
 
   constructor(private db: PrismaService) {}
 
-  async getById(id: User['id']) {
+  async getById(id: UserId) {
     const user = await this.db.user.findUnique({ where: { id }});
     if (user) {
       delete user.hash;
@@ -23,12 +23,12 @@ export class UserService {
     return user;
   }
 
-  async update(id: User['id'], data: Partial<User>) {
+  async update(id: UserId, data: Partial<User>) {
     data.updatedAt = new Date();
     await this.db.user.update({ where: { id }, data });
   }
 
-  async setPin(userId: User['id'], dto: SetPinDto) {
+  async setPin(userId: UserId, dto: SetPinDto) {
     try {
       await this.validatePin(userId, dto.pinCode, false);
       const hasPinProtection = Boolean(dto.newPinCode);
@@ -43,7 +43,7 @@ export class UserService {
     }
   }
 
-  async validatePin(userId: User['id'], pinCode: string, applyLimits: boolean) {
+  async validatePin(userId: UserId, pinCode: string, applyLimits: boolean) {
     const where = { id: userId };
     const user = await this.db.user.findUnique({ where });
     if (!user.hasPinProtection) {
@@ -79,7 +79,7 @@ export class UserService {
     return true;
   }
 
-  async removePinByPassword(userId: User['id'], password: string) {
+  async removePinByPassword(userId: UserId, password: string) {
     try {
       const where = { id: userId };
       const user = await this.db.user.findUnique({ where });
@@ -103,7 +103,7 @@ export class UserService {
     }
   }
 
-  async updatePassword(userId: User['id'], dto: ResetPasswordDto) {
+  async updatePassword(userId: UserId, dto: ResetPasswordDto) {
     const where = { id: userId };
     try {
       const user = await this.db.user.findUnique({ where });

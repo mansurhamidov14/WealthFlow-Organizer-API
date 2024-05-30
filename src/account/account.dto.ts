@@ -1,5 +1,7 @@
-import { CurrencyCode } from "@prisma/client";
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Account, CurrencyCode } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+
+export type AccountId = Account['id'];
 
 export class AccountFormDto {
   @IsString()

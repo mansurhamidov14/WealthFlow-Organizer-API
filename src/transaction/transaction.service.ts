@@ -1,12 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { QueryFilter, TransactionFormDto } from './transaction.dto';
+import { AccountId } from '@app/account/account.dto';
 import { PrismaService } from '@app/prisma/prisma.service';
+import { UserId } from '@app/user/user.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { QueryFilter, TransactionFormDto, TransactionId } from './transaction.dto';
 
 @Injectable()
 export class TransactionService {
   constructor(private db: PrismaService) {}
 
-  getList(userId: string, filter: QueryFilter) {
+  getList(userId: UserId, filter: QueryFilter) {
     const { fromDate, toDate, category, take, skip } = filter ?? {};
     return this.db.transaction.findMany({
       include: {
@@ -31,7 +33,7 @@ export class TransactionService {
     });
   }
 
-  findById(id: string, userId: string) {
+  findById(id: TransactionId, userId: UserId) {
     return this.db.transaction.findUnique({
       include: {
         account: {
@@ -44,27 +46,27 @@ export class TransactionService {
       where: { id, userId }});
   }
 
-  async create(userId: string, dto: TransactionFormDto) {
+  async create(userId: UserId, dto: TransactionFormDto) {
     const { date, account, ...rest } = dto;
     return this.db.transaction.create({
       data: {
         ...rest,
         user: { connect: { id: userId } },
-        account: { connect: { id: account } },
+        account: { connect: { id: Number(account) } },
         transactionDateTime: new Date(date),
         createdAt: new Date()
       }
     });
   }
 
-  async update(id: string, userId: string, dto: TransactionFormDto) {
+  async update(id: TransactionId, userId: UserId, dto: TransactionFormDto) {
     const { date, account, ...rest } = dto;
     try {
       const updated = await this.db.transaction.update({
         where: { id, userId },
         data: {
           ...rest,
-          account: { connect: { id: account } },
+          account: { connect: { id: Number(account) } },
           transactionDateTime: new Date(date),
           updatedAt: new Date()
         }
@@ -72,10 +74,10 @@ export class TransactionService {
       return updated;
     } catch (e) {
       throw new NotFoundException('Transaction not found');
-    } 
+    }
   }
 
-  async delete(id: string, userId: string) {
+  async delete(id: TransactionId, userId: UserId) {
     try {
       await this.db.transaction.delete({ where: { userId, id }});
       return true;
@@ -84,7 +86,7 @@ export class TransactionService {
     }
   }
 
-  async deleteByAccountId(userId: string, accountId: string) {
+  async deleteByAccountId(userId: UserId, accountId: AccountId) {
     try {
       const deleted = await this.db.transaction.deleteMany({ where: { accountId, userId } });
       return deleted;

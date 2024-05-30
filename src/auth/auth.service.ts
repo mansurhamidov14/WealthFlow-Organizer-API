@@ -1,8 +1,8 @@
 import { PrismaService } from '@app/prisma/prisma.service';
+import { UserId } from '@app/user/user.dto';
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { hash as createHash, verify as verifyPassword } from 'argon2';
 import { AuthDto, SignUpDto } from './auth.dto';
@@ -76,7 +76,7 @@ export class AuthService {
     }
   }
 
-  async refreshToken(userId: string, email: string, token: string) {
+  async refreshToken(userId: UserId, email: string, token: string) {
     const tokenHash = md5(token);
     const where = { userId, tokenHash }
     const activeToken = await this.prisma.usersRefreshTokens.findFirst({ where });
@@ -89,12 +89,12 @@ export class AuthService {
     return await this.signTokens(userId, email);
   }
 
-  async deleteRefreshToken(userId: User['id'], refreshToken: string) {
+  async deleteRefreshToken(userId: UserId, refreshToken: string) {
     const tokenHash = md5(refreshToken);
     await this.prisma.usersRefreshTokens.deleteMany({ where: { userId, tokenHash } });
   }
 
-  async signTokens(userId: User['id'], email: string) {
+  async signTokens(userId: UserId, email: string) {
     const payload = {
       sub: userId,
       email

@@ -1,4 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { User } from '@prisma/client';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+export type UserId = User['id'];
 
 export class ValidatePinDto {
   @IsString()

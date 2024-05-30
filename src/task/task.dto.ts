@@ -1,3 +1,5 @@
+import { UserId } from '@app/user/user.dto';
+import { Task } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -7,6 +9,8 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
+
+export type TaskId = Task['id'];
 
 class RecurringTaskDay {
   @IsNumber()
@@ -57,9 +61,9 @@ export class ToggleDoneDto {
 }
 
 type TaskByIdResponseBase = {
-  id: string;
+  id: TaskId;
   title: string;
-  userId: string;
+  userId: UserId;
 }
 
 export type OneTimeTaskResponse = TaskByIdResponseBase & {

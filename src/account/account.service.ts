@@ -1,6 +1,7 @@
 import { PrismaService } from '@app/prisma/prisma.service';
+import { UserId } from '@app/user/user.dto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { AccountFormDto } from './account.dto';
+import { AccountFormDto, AccountId } from './account.dto';
 
 @Injectable()
 export class AccountService {
@@ -8,15 +9,15 @@ export class AccountService {
 
   constructor(private db: PrismaService) {}
 
-  getList(userId: string) {
+  getList(userId: UserId) {
     return this.db.account.findMany({ where: { userId }, orderBy: { primary: 'desc' } });
   }
 
-  findById(id: string, userId: string) {
+  findById(id: AccountId, userId: UserId) {
     return this.db.account.findUnique({ where: { id, userId }});
   }
 
-  async create(userId: string, dto: AccountFormDto) {
+  async create(userId: UserId, dto: AccountFormDto) {
     const primary = dto.primary && dto.primary != '0';
     if (primary) {
       await this.removePrimaryFlagFromPrimaryAccount(userId);
@@ -32,7 +33,7 @@ export class AccountService {
     });
   }
 
-  async update(id: string, userId: string, dto: AccountFormDto) {
+  async update(id: AccountId, userId: UserId, dto: AccountFormDto) {
     const primary = dto.primary && dto.primary != '0';
     if (primary) {
       await this.removePrimaryFlagFromPrimaryAccount(userId);
@@ -53,14 +54,14 @@ export class AccountService {
     }
   }
 
-  private removePrimaryFlagFromPrimaryAccount(userId: string) {
+  private removePrimaryFlagFromPrimaryAccount(userId: UserId) {
     return this.db.account.updateMany({
       where: { userId, primary: true },
       data: { primary: false }
     });
   }
 
-  async delete(id: string, userId: string) {
+  async delete(id: AccountId, userId: UserId) {
     const isPrimary = await this.db.account.count({ where: { id, userId, primary: true }});
     if (isPrimary) {
       throw new ForbiddenException(AccountService.PRIMARY_ACCOUNT_CAN_NOT_BE_DELETED_ERROR);
@@ -73,7 +74,7 @@ export class AccountService {
     }
   }
 
-  async changeBalance(id: string, userId: string, difference: number) {
+  async changeBalance(id: AccountId, userId: UserId, difference: number) {
     try {
       const updated = this.db.account.update({
         where: { id, userId },

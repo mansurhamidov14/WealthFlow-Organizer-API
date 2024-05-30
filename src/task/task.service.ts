@@ -1,17 +1,18 @@
 import { PrismaService } from '@app/prisma/prisma.service';
+import { UserId } from '@app/user/user.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { OneTimeTaskResponse, RecurringTaskResponse, TaskFormDto } from './task.dto';
-import { Task, User } from '@prisma/client';
+import { Task } from '@prisma/client';
+import { OneTimeTaskResponse, RecurringTaskResponse, TaskFormDto, TaskId } from './task.dto';
 
 @Injectable()
 export class TaskService {
   constructor(private db: PrismaService) {}
 
-  getList(userId: User['id']) {
+  getList(userId: UserId) {
     return this.db.task.findMany({ where: { userId } });
   }
 
-  async addTask(userId: User['id'], dto: TaskFormDto) {
+  async addTask(userId: UserId, dto: TaskFormDto) {
     const isRecurring = Boolean(Number(dto.isRecurring));
 
     // Creating single record if task is not recurring
@@ -22,7 +23,7 @@ export class TaskService {
           weekday: new Date(dto.startDate).getDay() || 7,
           title: dto.title,
           startDate: dto.startDate,
-          endDate: dto.endDate,
+          endDate: isRecurring ? dto.endDate : dto.startDate,
           isRecurring,
           time: dto.time,
           createdAt: new Date(),
@@ -66,8 +67,8 @@ export class TaskService {
   }
   
   async delete(
-    originalId: Task['id'],
-    userId: User['id'],
+    originalId: TaskId,
+    userId: UserId,
     hardDelete: boolean
   ) {
     if (hardDelete) { // We should delete original task with all linked tasks
@@ -123,7 +124,7 @@ export class TaskService {
     return deleted;
   }
 
-  async getById(id: Task['id'], userId: User['id']) {
+  async getById(id: TaskId, userId: UserId) {
     const task = await this.db.task.findUnique({ where: { id, userId } });
 
     if (!task) {
@@ -166,7 +167,7 @@ export class TaskService {
     } as RecurringTaskResponse;
   }
 
-  updateById(id: Task['id'], userId: User['id'], data: Partial<Task>) {
+  updateById(id: TaskId, userId: UserId, data: Partial<Task>) {
     return this.db.task.update({
       where: { id, userId },
       data

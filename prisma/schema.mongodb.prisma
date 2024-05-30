@@ -1,11 +1,10 @@
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 enum CurrencyCode {
@@ -19,7 +18,7 @@ enum CurrencyCode {
 }
 
 model CurrencyRate {
-  id     Int          @id @default(autoincrement())
+  id     String       @id @default(auto()) @map("_id") @db.ObjectId
   from   CurrencyCode
   to     CurrencyCode
   result Float
@@ -29,7 +28,7 @@ model CurrencyRate {
 }
 
 model User {
-  id                          Int           @id @default(autoincrement())
+  id                          String        @id @default(auto()) @map("_id") @db.ObjectId
   email                       String        @unique
   hash                        String
   firstName                   String
@@ -50,15 +49,15 @@ model User {
 }
 
 model UsersRefreshTokens {
-  id        Int    @id @default(autoincrement())
-  userId    Int
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
   tokenHash String
 
   @@map("usersRefreshTokens")
 }
 
 model Account {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   title        String
   currency     CurrencyCode
   primary      Boolean
@@ -66,7 +65,7 @@ model Account {
   skin         String
   createdAt    DateTime
   updatedAt    DateTime?
-  userId       Int
+  userId       String        @db.ObjectId
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
 
@@ -79,7 +78,7 @@ enum TransactionType {
 }
 
 model Transaction {
-  id                  Int             @id @default(autoincrement())
+  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
   title               String
   type                TransactionType
   amount              Float
@@ -87,18 +86,18 @@ model Transaction {
   transactionDateTime DateTime
   createdAt           DateTime
   updatedAt           DateTime?
-  userId              Int
+  userId              String          @db.ObjectId
   user                User            @relation(fields: [userId], references: [id])
-  accountId           Int
+  accountId           String          @db.ObjectId
   account             Account         @relation(fields: [accountId], references: [id])
 
   @@map("transactions")
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  originalId  Int?
-  userId      Int
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  originalId  String?
+  userId      String    @db.ObjectId
   user        User      @relation(fields: [userId], references: [id])
   title       String
   isRecurring Boolean
