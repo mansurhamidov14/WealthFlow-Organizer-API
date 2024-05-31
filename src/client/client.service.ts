@@ -17,6 +17,12 @@ export class ClientService {
   }
 
   getIp(request: Request) {
-    return request.ip === '::1' ? this.config.get('LOCAL_SERVER_IP') : request.ip;
+    const forwarded = request.headers['x-forwarded-for'] as string | undefined;
+
+    if (!forwarded) {
+      return request.ip === '::1' ? this.config.get('LOCAL_SERVER_IP') : request.ip;
+    }
+
+    return forwarded.split(',')[0];
   }
 }

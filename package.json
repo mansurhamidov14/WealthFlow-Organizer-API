@@ -18,10 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:generate": "prisma generate",
-    "db:use:mongodb": "cp ./prisma/schema.mongodb.prisma ./prisma/schema.prisma && cp ./transaction/transaction.dto.mongo.ts ./transaction/transaction.dto.ts && npm run db:generate",
-    "db:use:postgre": "cp ./prisma/schema.postgre.prisma ./prisma/schema.prisma && cp ./transaction/transaction.dto.sql.ts ./transaction/transaction.dto.ts && npm run db:generate",
-    "db:use:mysql": "cp ./prisma/schema.mysql.prisma ./prisma/schema.prisma && cp ./transaction/transaction.dto.sql.ts ./transaction/transaction.dto.ts && npm run db:generate"
+    "db:generate": "prisma generate"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",
