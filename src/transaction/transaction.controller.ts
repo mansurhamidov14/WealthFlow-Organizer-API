@@ -16,16 +16,14 @@ export class TransactionController {
   @Get('list')
   getList(
     @User('sub') userId: UserId,
-    @Query('from') fromDate?: string,
-    @Query('to') toDate?: string,
-    @Query('category') category?: string,
+    @Query('startDate') fromDate?: string,
+    @Query('endDate') toDate?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string
   ) {
     return this.transactionService.getList(userId, {
       fromDate,
       toDate,
-      category,
       skip: Number(offset) || undefined,
       take: Number(limit) || undefined
     });

@@ -32,7 +32,6 @@ export class TransactionFormDto {
 export type QueryFilter = {
   fromDate?: string;
   toDate?: string;
-  category?: string;
   take?: number;
   skip?: number;
 }

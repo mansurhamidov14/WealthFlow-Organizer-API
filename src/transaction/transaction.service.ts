@@ -9,7 +9,8 @@ export class TransactionService {
   constructor(private db: PrismaService) {}
 
   getList(userId: UserId, filter: QueryFilter) {
-    const { fromDate, toDate, category, take, skip } = filter ?? {};
+    console.log(filter)
+    const { fromDate, toDate, take, skip } = filter ?? {};
     return this.db.transaction.findMany({
       include: {
         account: {
@@ -25,7 +26,6 @@ export class TransactionService {
           gte: fromDate &&  new Date(fromDate),
           lte: toDate && new Date(toDate)
         },
-        category: category || undefined
       },
       orderBy: { transactionDateTime: 'desc' },
       skip,
